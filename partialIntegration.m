@@ -12,7 +12,7 @@ gNeptune=[gx_zonal; gy_zonal; gz_zonal];
 
 %Влияние солнца
 mugSun=132712.43994*(10^6)*(10^(3*3));
-t_Neptune=juliandate(2049,6,10);
+t_Neptune=juliandate(2050,3,31);
 rNS= planetEphemeris(t_Neptune+t/24/3600,'Neptune','Sun')';
 rSun=rNS*1e3-r;
 gSun=-mugSun*rSun/norm(rSun)^3;
@@ -23,9 +23,9 @@ rTr = TritonR(t, keplerT)-r;
 mugTr=1427.6*1e9;%https://ssd.jpl.nasa.gov/?sat_phys_par
 gTr=-mugTr*rTr/norm(rTr)^3;
 
-res(4:6)=gNeptune+gSun+gTr;
-
+%res(4:6)=gNeptune+gTr;%+gSun;
+res(4:6)=gNeptune+gTr+gSun;
 %mugNeptune=6.809e15;
-%res(4:6)=-mug*r/norm(r)^3;
+%res(4:6)=-mugNeptune*r/norm(r)^3;
 end
 
