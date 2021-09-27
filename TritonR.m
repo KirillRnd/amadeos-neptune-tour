@@ -11,12 +11,13 @@ omega=pi*kepler(6)/180;
 Omega=pi*kepler(7)/180;
 
 M=M0+n*t;
-nu=M;%Только для Тритона
+E = EAnomaly(e, M);
+nu=2*atan(tan(E/2)*sqrt((1+e)/(1-e)));%Только для Тритона
 
 %Rflat=[a*cos(nu); a*sin(nu); 0];
 %RT=rotmZYX*Rflat;
 mugNeptune=6.809e15;
-[RT VT] = orb2rv(p,e,i,Omega,omega,nu,mugNeptune);
+[RT, VT] = orb2rv(p,e,i,Omega,omega,nu,mugNeptune);
 end
 %Mean motion (deg/day), semi-major axis (km), eccentricity, inclination, mean anomaly,
 %argument of pericenter, longitude of the ascending node are calculated independently.
