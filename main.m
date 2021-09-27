@@ -1,5 +1,5 @@
 %Общая структура моделирования 31.3.2050
-load('D:\Копия с Pavillon\MATLAB\MVT_1\EJN\БУТ\gelio23.1.mat')
+load('MVT/gelio23.1.mat')
 res = TEMP(:,20);
 
 rN=mvt2icrf(res(17:19))*1e3;
@@ -10,7 +10,7 @@ T23=res(29);
 m3=res(20);
 n3=res(25);
 
-load('D:\Копия с Pavillon\MATLAB\MVT_1\EJN\БУТ\T_base.mat')
+load('MVT/T_base.mat')
 [year,month,day] = year2date(T_Neptune(m3,n3));
 % year=2049;
 % month=5;
@@ -308,8 +308,8 @@ hold off;
 %Проекция на Нептун
 figure(2);
 
-ind_pr_1=20200;
-ind_pr_2=22400;
+ind_pr_1=20200;%Второй виток
+ind_pr_2=22400;%Второй виток
 [rr_proj_az,rr_proj_el] = arrayfun(@(t,x,y,z)projectTrajectory(t,[x,y,z]),...
     t(ind_pr_1:ind_pr_2),rr(ind_pr_1:ind_pr_2, 1),rr(ind_pr_1:ind_pr_2, 2),rr(ind_pr_1:ind_pr_2, 3),'UniformOutput',false);
 rr_proj_az = cell2mat(rr_proj_az)';
