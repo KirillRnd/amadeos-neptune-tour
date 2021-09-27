@@ -5,21 +5,22 @@ res = zeros(1,6)';
 r=y(1:3);
 V=y(4:6);
 res(1:3)=V;
-[gx_zonal, gy_zonal, gz_zonal] = gravityzonal(r', 'Neptune');
+[gx_zonal, gy_zonal, gz_zonal] = gravityzonal(r', 'Neptune', 2);
 gNeptune=[gx_zonal; gy_zonal; gz_zonal];
-
-
+%Время, котороем летим от края сферы влияния до Нептуна в гелиоцентрической
+%задачеН
+t0_dist = 1.557156619267957e+07;
 
 %Влияние солнца
 mugSun=132712.43994*(10^6)*(10^(3*3));
 t_Neptune=juliandate(2050,3,31);
-rNS= planetEphemeris(t_Neptune+t/24/3600,'Neptune','Sun')';
+rNS= planetEphemeris(t_Neptune+t-t0_dist/24/3600,'Neptune','Sun')';
 rSun=rNS*1e3-r;
 gSun=-mugSun*rSun/norm(rSun)^3;
 
 %Влияние Тритона
 keplerT = [61.315381532    354532.843 0.00000000 111.935349 308.921483   0.000000 219.270622];%31.3.2050
-rTr = TritonR(t, keplerT)-r;
+rTr = TritonR(t-t0_dist, keplerT)-r;
 mugTr=1427.6*1e9;%https://ssd.jpl.nasa.gov/?sat_phys_par
 gTr=-mugTr*rTr/norm(rTr)^3;
 

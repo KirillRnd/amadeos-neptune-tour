@@ -3,8 +3,8 @@ res = TEMP(:,20);
 
 rN=mvt2icrf(res(17:19))*1e3;
 VN=mvt2icrf(res(26:28))*1e3;
-
-
+angle2vectors = @(u,v) atan2(norm(cross(u,v)),dot(u,v));
+load('MVT/T_base.mat')
 m1=       res(2);      % Номер строки в T_base для узла первой планеты
 n1=       res(3);      % Номер столбца в T_base для узла первой планеты
 r1=       mvt2icrf(res(4:6))*1e3;    % Радиус-вектор первой планеты маршрута
@@ -85,6 +85,28 @@ hold on;
 
 plot3(rr(:, 1)/RJ, rr(:, 2)/RJ, rr(:, 3)/RJ, 'g', 'LineWidth', 1);
 plot3([PoleNx; -PoleNx], [PoleNy; -PoleNy], [PoleNz; -PoleNz], 'k', 'LineWidth', 1);
+%Время пролёта в центре массива совпадает с датой 22.1.2033
+tMoons = t-t1(end);
+%Ио
+keplerT = [203.319432880    421941.192 0.00425971  25.488489 293.700025 113.745069 358.148522];%22.1.2033
+rrT = arrayfun(@(t)jupiterMoon(t,keplerT), tMoons','UniformOutput',false);
+rrT = cell2mat(rrT)';
+plot3(rrT(:, 1)/RJ, rrT(:, 2)/RJ, rrT(:, 3)/RJ, 'm', 'LineWidth', 2.5);
+%Европа
+keplerT = [101.373921510    671043.288 0.00965902  25.110625 323.144797 300.031607 358.573774];%22.1.2033
+rrT = arrayfun(@(t)jupiterMoon(t,keplerT), tMoons','UniformOutput',false);
+rrT = cell2mat(rrT)';
+plot3(rrT(:, 1)/RJ, rrT(:, 2)/RJ, rrT(:, 3)/RJ, 'm', 'LineWidth', 2.5);
+%Ганимед
+keplerT = [50.318631422   1070425.532 0.00200786  25.625514  86.907240  15.029019 357.904160];%22.1.2033
+rrT = arrayfun(@(t)jupiterMoon(t,keplerT), tMoons','UniformOutput',false);
+rrT = cell2mat(rrT)';
+plot3(rrT(:, 1)/RJ, rrT(:, 2)/RJ, rrT(:, 3)/RJ, 'm', 'LineWidth', 2.5);
+%Каллисто
+keplerT = [21.583172346   1882040.909 0.00739007  25.232828 243.194338  17.617524 358.198304];%22.1.2033
+rrT = arrayfun(@(t)jupiterMoon(t,keplerT), tMoons','UniformOutput',false);
+rrT = cell2mat(rrT)';
+plot3(rrT(:, 1)/RJ, rrT(:, 2)/RJ, rrT(:, 3)/RJ, 'm', 'LineWidth', 2.5);
 
 axis equal;
 hold off;

@@ -320,10 +320,51 @@ xlim([-pi pi])
 ylim([-pi pi])
 
 %Вычисление в СО Нептуна
+rr_necc = rr(ind_pr_1:ind_pr_2, :);
 rr_N_SO = arrayfun(@(t,x,y,z)rotationNeptune(t,[x,y,z]),...
-    t(ind_pr_1:ind_pr_2),rr(ind_pr_1:ind_pr_2, 1),rr(ind_pr_1:ind_pr_2, 2),rr(ind_pr_1:ind_pr_2, 3),'UniformOutput',false);
+    t(ind_pr_1:ind_pr_2),rr_necc(:,1),rr_necc(:,2),rr_necc(:,3),'UniformOutput',false);
 rr_N_SO = cell2mat(rr_N_SO')';
 t_N_SO = t(ind_pr_1:ind_pr_2)-t(ind_pr_1);
 t_N_SO(end)/24/3600
 dlmwrite('r-N-gelio.csv',rr_N_SO,'precision',10)
 dlmwrite('t-N-gelio.csv',t_N_SO,'precision',10)
+
+n = cross( VV(ind_pr_1,:), rr(ind_pr_1,:));
+n = n/norm(n);
+
+
+
+rr_necc_norm = vecnorm(rr_necc, 2, 2);
+tanalpha=1/65;
+
+n_plus=n-tanalpha*rr_necc(1,:)/rr_necc_norm(1);
+n_plus=n_plus/norm(n_plus);
+n_minus=-n-tanalpha*rr_necc(1,:)/rr_necc_norm(1);
+n_minus=n_minus/norm(n_minus);
+
+rr_necc_plus = rr_necc./rr_necc_norm;
+rr_necc_minus = rr_necc./rr_necc_norm;
+r_cos_plus=rr_necc_plus*n_plus';
+r_cos_minus=rr_necc_minus*n_minus';
+
+for i = 1:length(r_cos_plus)
+    rr_necc_plus(i,:)=rr_necc_plus(i,:)+n_plus*r_cos_plus(i);
+    rr_necc_minus(i,:)=rr_necc_minus(i,:)+n_minus*r_cos_minus(i);
+end
+
+rr_necc_plus_norm = vecnorm(rr_necc_plus, 2, 2);
+rr_necc_minus_norm = vecnorm(rr_necc_minus, 2, 2);
+
+rr_necc_plus = rr_necc_plus./rr_necc_plus_norm;
+rr_N_SO_plus = arrayfun(@(t,x,y,z)rotationNeptune(t,[x,y,z]),...
+    t(ind_pr_1:ind_pr_2),rr_necc_plus(:,1),rr_necc_plus(:,2),rr_necc_plus(:,3),'UniformOutput',false);
+rr_N_SO_plus = cell2mat(rr_N_SO_plus')';
+dlmwrite('dir-plus-N-gelio.csv',rr_N_SO_plus,'precision',10)
+
+rr_necc_minus = rr_necc_minus./rr_necc_plus_norm;
+rr_N_SO_minus = arrayfun(@(t,x,y,z)rotationNeptune(t,[x,y,z]),...
+    t(ind_pr_1:ind_pr_2),rr_necc_minus(:,1),rr_necc_minus(:,2),rr_necc_minus(:,3),'UniformOutput',false);
+rr_N_SO_minus = cell2mat(rr_N_SO_minus')';
+dlmwrite('dir-minus-N-gelio.csv',rr_N_SO_minus,'precision',10)
+
+angle2vectors(rr_N_SO(1,:),rr_N_SO_minus(1,:))
