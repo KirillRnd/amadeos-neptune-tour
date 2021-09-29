@@ -15,9 +15,11 @@ load('MVT/T_base.mat')
 % year=2049;
 % month=5;
 % day=8;
+RT=1353400;%Радиус Тритона
 t_Neptune=juliandate(year,month,day);
 %T = 2.631286788824651e+04; %период орбиты на расттоянии 2RN
-T = 4.423802058240195e+05; %период орбиты на расттоянии a=(25RN+minimum)/2
+T0 =  1.640023631767377e+06;
+T = 4.292471197610088e+05; %период орбиты на расттоянии a=(25RN+minimum)/2
 T2 = 2.722295586988940e+06;
 TTr = 2.327317237000118e+06;
 Tend = 1.763575681396873e+06;
@@ -92,50 +94,112 @@ y0= [r0; V0];
 
 %Массив импульсов с направлениями и временами
 
-val_DV1 = 7.45;%затраты хар. скорости м/с
+val_DV1 = 8.59;%затраты хар. скорости м/с
 dir_dV1 = -cross(V0,cross(SunLine,V0));
 dir_dV1=dir_dV1/norm(dir_dV1);
 
-
-val_DV2 = 1249;%1126;%затраты хар. скорости м/с
-dir_dV2=-1.0e+04 *[1.803825160359039  -1.166861102502703  -0.497629196420129];
+%Первый тормозной импульс
+val_DV2 = -950;%1126;%затраты хар. скорости м/с
+dir_dV2=1.0e+04 *[1.781998893321638  -1.142666122750968  -0.484724116406552];
 dir_dV2=dir_dV2/norm(dir_dV2);
 
-tdV_2 = 1.539643719787284e+07;
+tdV_2 = 1.539525149705983e+07;
 
-val_DV3 = 3.100382643482918e+03;
-dir_dV3 =1.0e+02 *[-9.000700240899373   5.723854569385946   2.541041444850348];
+%Второй тормозной импульс
+val_DV3 = -3.084123550418008e+02;
+dir_dV3 = 1.0e+04 *[1.665011548038263  -1.141106172321206  -0.486895771533629];
 dir_dV3=dir_dV3/norm(dir_dV3);
 
-tdV_3 = tdV_2+3.2*T;
+tdV_3 = tdV_2+T0;
 
-val_DV4 = 2.685493367754898e+02;
-dir_dV4 =-1.0e+03 *[1.315472154003004  -0.757916699965822  -0.339359566765040];
+%Поднятие до хвоста магнитопаузы первый импульс
+val_DV4 = 1568;
+dir_dV4 = 1.0e+02 *[-8.213716499245859   5.963945086903120   2.730439197810426];
 dir_dV4=dir_dV4/norm(dir_dV4);
 
-tdV_4 = tdV_3+4.48*T2;
-
-val_DV5 = 61.2;
-dir_dV5 =-1.0e+03 *[-4.543984905734358   2.982898429422372   1.318133314320320];
+tdV_4 = t_10T+0.5*T;
+%Поднятие до хвоста магнитопаузы второй импульс
+val_DV5 = 1434;
+dir_dV5 =1.0e+03 *[-2.139196402652551,   1.366800171828381,   0.638846286935880];
 dir_dV5=dir_dV5/norm(dir_dV5);
 
-tdV_5 = tdV_4+0.456*TTr;
+T_int = 6.762583512360826e+05;
+tdV_5 = tdV_4+T_int;
+%Корректировка наклонения, чтобы точно в хвост магнитосферы попадать
+val_DV6 = 52;
+dir_dV6 =[-0.103171264325036   0.897977155531577  -2.269032961984546];
+dir_dV6=dir_dV6/norm(dir_dV6);
+T_long=2.804723854961529e+06;
+tdV_6 = tdV_5+0.9*T_long;
+%Спускаемся до Орбиты Тритона
+val_DV7 = -263.2;
+dir_dV7 =1.0e+03 *[1.170254764220188  -0.855716254550331  -0.391215977525669];
+dir_dV7=dir_dV7/norm(dir_dV7);
 
-val_DVres = -111.7;
-dir_dVres =1.0e+03 *[  -4.474323061004518   3.067352615996629   1.350263920399283];
-dir_dVres=dir_dVres/norm(dir_dVres);
+T_long10_ap=5.170850471987467e+07;
+tdV_7 = T_long10_ap+T_long*0.97;
 
-tdVres = tdV_5+0.833*TTr;
+%Устраиваем рандеву
+val_DV8 = +24.56;
+dir_dV8 =1.0e+03 *[-4.002190456180498   3.523715235508035   1.586704707928871];
+dir_dV8=dir_dV8/norm(dir_dV8);
 
-val_DVend = -1670;
-dir_dVend =1.0e+03 *[2.020652850947396  -1.246657564600486  -0.462203803499719];
+T_corr=1.243502576186567e+06;
+T_enc=2.0590*T_corr;
+tdV_8 = tdV_7+T_corr;
+
+%Резонанс 4:1
+val_DV9 = -82;
+dir_dV9 =1.0e+03 *[-4.175713651185919   3.138992832089351   1.470355312252891];
+dir_dV9=dir_dV9/norm(dir_dV9);
+
+tdV_9 = tdV_8+T_enc;
+
+%Резонанс 4:1 второй
+val_DV10 = +74.5;
+dir_dV10 =1.0e+03 *[-4.220086735027001   3.263528068258492   1.550851347342127];
+dir_dV10=dir_dV10/norm(dir_dV10);
+
+tdV_10 = tdV_9+TTr4_1;
+
+%Резонанс 4:1
+val_DV11 = -4;
+dir_dV11 =1.0e+03 *[1.110697712707899  -0.744824370192724  -0.326725931032282];
+dir_dV11=dir_dV11/norm(dir_dV11);
+
+tdV_11 = tdV_10+TTr2_1;
+% val_DVres = -111.7;
+% dir_dVres =1.0e+03 *[  -4.474323061004518   3.067352615996629   1.350263920399283];
+% dir_dVres=dir_dVres/norm(dir_dVres);
+% 
+% tdVres = tdV_5+0.833*TTr;
+% 
+val_DVend = -1200;
+dir_dVend =1.0e+03 *[1.269776126069155  -1.002252870251370  -0.398289212102105];
 dir_dVend=dir_dVend/norm(dir_dVend);
 
-tdVend = tdVres+TTr2_1*3.5;
+tdVend = tdV_11+3.372801612961292e+06;
 
-dV=[dir_dV1*val_DV1;[0, 0, 0];dir_dV2*val_DV2;dir_dV3*val_DV3;dir_dV4*val_DV4;dir_dV5*val_DV5;dir_dVres*val_DVres;dir_dVend*val_DVend;];
-tdV=[t0_dist*0.1,t0_dist*0.98,tdV_2,tdV_3,tdV_4,tdV_5,tdVres,tdVend];
-lsp=[100;100;10000;10000;10000;10000;10000;10000;10000];
+% dV=[dir_dV1*val_DV1;[0, 0, 0];dir_dV2*val_DV2;dir_dV3*val_DV3;dir_dV4*val_DV4;dir_dV5*val_DV5;dir_dVres*val_DVres;dir_dVend*val_DVend;];
+% tdV=[t0_dist*0.1,t0_dist*0.98,tdV_2,tdV_3,tdV_4,tdV_5,tdVres,tdVend];
+% lsp=[100;100;10000;10000;10000;10000;10000;10000;10000];
+
+% dV=[dir_dV1*val_DV1;[0, 0, 0];dir_dV2*val_DV2;dir_dV3*val_DV3;];
+% tdV=[t0_dist*0.1,t0_dist*0.98,tdV_2,tdV_3];
+% lsp=[100;100;10000;10000;10000;];
+dV=[dir_dV7*val_DV7;dir_dV8*val_DV8;dir_dV9*val_DV9;dir_dV10*val_DV10;dir_dV11*val_DV11;dir_dVend*val_DVend;];
+tdV=[tdV_7,tdV_8,tdV_9,tdV_10,tdV_11,tdVend];
+lsp=[10000;10000;10000;10000;10000;10000;10000;];%на один больше числа импульсов
+
+t_10T = 2.132602916624223e+07;
+rr_10T=1.0e+07 *[1.993305859334368;2.221608322826301;0.791584046491936];
+VV_10T=1.0e+04 *[1.588094205170606;-1.178573767259988;-0.536972261163208];
+
+rr_10longT=1.0e+09 *[1.175293640249717;1.045203062098898;0.389891144173080];
+VV_10longT=1.0e+03 *[1.031461046734626;-0.994856307009594;-0.443671059410833];
+
+y0=[rr_10longT;VV_10longT];
+
 % 
 % dV=[dir_dVres*val_DVres;dir_dVend*val_DVend;];
 % tdV=[tdVres,tdVend];
@@ -145,7 +209,9 @@ lsp=[100;100;10000;10000;10000;10000;10000;10000;10000];
 % V0=1.0e+03 *[  -4.424602685343921   3.034713680448864   1.335840878747880];
 % y0=[r0,V0]';
 %tspan=[0,tdVend+TTr3_1];
-tspan=[0,tdVend+TTr2_1];
+
+tspan=[T_long10_ap,tdVend+TTr2_1];
+
 % dV=[];
 % tdV=[];
 % lsp=[100];
@@ -208,20 +274,21 @@ plot3(rr(:, 1)/RN, rr(:, 2)/RN, rr(:, 3)/RN, 'g', 'LineWidth', 1);
 plot3([PoleNx; -PoleNx], [PoleNy; -PoleNy], [PoleNz; -PoleNz], 'k', 'LineWidth', 1);
 
 %plot3(rr(100, 1)/ae, rr(100, 2)/ae, rr(100, 3)/ae, 'rO', 'LineWidth', 1.5);
-ind1=lsp(1)+lsp(2)+1;
-ind2=lsp(1)+lsp(2)+lsp(3);
-minimum = min(vecnorm(rr(ind1:ind2,:),2,2));
-ind_per = find(minimum == vecnorm(rr(ind1:ind2,:),2,2))+lsp(1)+lsp(2);
-plot3(rr(ind_per, 1)/RN, rr(ind_per, 2)/RN, rr(ind_per, 3)/RN, 'rO', 'LineWidth', 1.5);
-ind_3_man=lsp(1)+lsp(2)+lsp(3)+lsp(4);
-plot3(rr(ind_3_man, 1)/RN, rr(ind_3_man, 2)/RN, rr(ind_3_man, 3)/RN, 'rO', 'LineWidth', 1.5);
-ind_4_man=lsp(1)+lsp(2)+lsp(3)+lsp(4)+lsp(5);
-plot3(rr(ind_4_man, 1)/RN, rr(ind_4_man, 2)/RN, rr(ind_4_man, 3)/RN, 'rO', 'LineWidth', 1.5);
-ind_5_man=lsp(1)+lsp(2)+lsp(3)+lsp(4)+lsp(5)+lsp(6);
-plot3(rr(ind_5_man, 1)/RN, rr(ind_5_man, 2)/RN, rr(ind_5_man, 3)/RN, 'rO', 'LineWidth', 1.5);
-ind_6_man=lsp(1)+lsp(2)+lsp(3)+lsp(4)+lsp(5)+lsp(6)+lsp(7);
-plot3(rr(ind_6_man, 1)/RN, rr(ind_6_man, 2)/RN, rr(ind_6_man, 3)/RN, 'rO', 'LineWidth', 1.5);
-ind_7_man=lsp(1)+lsp(2)+lsp(3)+lsp(4)+lsp(5)+lsp(6)+lsp(7)+lsp(8);
+% ind1=lsp(1)+lsp(2)+1;
+% ind2=lsp(1)+lsp(2)+lsp(3);
+% minimum = min(vecnorm(rr(ind1:ind2,:),2,2));
+% ind_per = find(minimum == vecnorm(rr(ind1:ind2,:),2,2))+lsp(1)+lsp(2);
+% plot3(rr(ind_per, 1)/RN, rr(ind_per, 2)/RN, rr(ind_per, 3)/RN, 'rO', 'LineWidth', 1.5);
+% ind_3_man=lsp(1)+lsp(2)+lsp(3)+lsp(4);
+% plot3(rr(ind_3_man, 1)/RN, rr(ind_3_man, 2)/RN, rr(ind_3_man, 3)/RN, 'rO', 'LineWidth', 1.5);
+% ind_4_man=lsp(1)+lsp(2)+lsp(3)+lsp(4)+lsp(5);
+% plot3(rr(ind_4_man, 1)/RN, rr(ind_4_man, 2)/RN, rr(ind_4_man, 3)/RN, 'rO', 'LineWidth', 1.5);
+% ind_5_man=lsp(1)+lsp(2)+lsp(3)+lsp(4)+lsp(5)+lsp(6);
+% plot3(rr(ind_5_man, 1)/RN, rr(ind_5_man, 2)/RN, rr(ind_5_man, 3)/RN, 'rO', 'LineWidth', 1.5);
+% ind_6_man=lsp(1)+lsp(2)+lsp(3)+lsp(4)+lsp(5)+lsp(6)+lsp(7);
+% plot3(rr(ind_6_man, 1)/RN, rr(ind_6_man, 2)/RN, rr(ind_6_man, 3)/RN, 'rO', 'LineWidth', 1.5);
+%ind_7_man=lsp(1)+lsp(2)+lsp(3)+lsp(4)+lsp(5)+lsp(6)+lsp(7)+lsp(8);
+ind_7_man=40000;
 plot3(rr(ind_7_man, 1)/RN, rr(ind_7_man, 2)/RN, rr(ind_7_man, 3)/RN, 'rO', 'LineWidth', 1.5);
 
 %plot3([rr(1, 1)/ae;rr(1, 1)/ae+V0(1)*1e-7], [rr(1, 2)/ae;rr(1, 2)/ae+V0(2)*1e-7], [rr(1, 3)/ae;rr(1, 3)/ae+V0(3)*1e-7], 'r', 'LineWidth', 1);
@@ -232,12 +299,15 @@ plot3(rr(end, 1)/RN, rr(end, 2)/RN, rr(end, 3)/RN, 'kO', 'LineWidth', 1.5);
 
 %Тритон
 keplerT = [61.315381532    354532.843 0.00000000 111.935349 308.921483   0.000000 219.270622];%31.3.2050
-rrT = arrayfun(@(t)TritonR(t,keplerT), linspace(0,5.90*24*3600,50),'UniformOutput',false);
+rrT = arrayfun(@(t)TritonR(t,keplerT), linspace(0,5.90*24*3600,500),'UniformOutput',false);
 rrT = cell2mat(rrT)';
 plot3(rrT(:, 1)/RN, rrT(:, 2)/RN, rrT(:, 3)/RN, 'b', 'LineWidth', 2.5);
 
+rrT_real = arrayfun(@(t)TritonR(t,keplerT), t'-t0_dist,'UniformOutput',false);
+rrT_real = cell2mat(rrT_real)';
+min(vecnorm(rrT_real-rr,2,2))-RT
 rT_1 = TritonR(tspan(2),keplerT);
-plot3(rT_1(1)/RN, rT_1(2)/RN, rT_1(3)/RN, 'bO', 'LineWidth', 2.5);
+plot3(rrT_real(end,1)/RN, rrT_real(end,2)/RN, rrT_real(end,3)/RN, 'bO', 'LineWidth', 2.5);
 
 %Нереида - нет эфемерид на дату
 
@@ -261,31 +331,31 @@ plot3(rrN5(:, 1)/RN, rrN5(:, 2)/RN, rrN5(:, 3)/RN, 'm', 'LineWidth', 1);
 
 %Галатея
 
-keplerN5 = [839.456823581     61945.100 0.00012000  47.040284 179.420028 231.310371  29.328417];%31.3.2050
-rrN5 = arrayfun(@(t)TritonR(t,keplerN5), linspace(0,2*24*3600,1000),'UniformOutput',false);
-rrN5 = cell2mat(rrN5)';
-plot3(rrN5(:, 1)/RN, rrN5(:, 2)/RN, rrN5(:, 3)/RN, 'm', 'LineWidth', 1);
+keplerN6 = [839.456823581     61945.100 0.00012000  47.040284 179.420028 231.310371  29.328417];%31.3.2050
+rrN6 = arrayfun(@(t)TritonR(t,keplerN6), linspace(0,2*24*3600,1000),'UniformOutput',false);
+rrN6 = cell2mat(rrN6)';
+plot3(rrN6(:, 1)/RN, rrN6(:, 2)/RN, rrN6(:, 3)/RN, 'm', 'LineWidth', 1);
 
 %2004_N1
 
-keplerN5 = [378.887763843    105284.000 0.00000000  47.056000   7.635286   0.000000  29.373000];%31.3.2050
-rrN5 = arrayfun(@(t)TritonR(t,keplerN5), linspace(0,2*24*3600,1000),'UniformOutput',false);
-rrN5 = cell2mat(rrN5)';
-plot3(rrN5(:, 1)/RN, rrN5(:, 2)/RN, rrN5(:, 3)/RN, 'm', 'LineWidth', 1);
+kepler2004_N1 = [378.887763843    105284.000 0.00000000  47.056000   7.635286   0.000000  29.373000];%31.3.2050
+rrN2004_N1 = arrayfun(@(t)TritonR(t,kepler2004_N1), linspace(0,2*24*3600,1000),'UniformOutput',false);
+rrN2004_N1 = cell2mat(rrN2004_N1)';
+plot3(rrN2004_N1(:, 1)/RN, rrN2004_N1(:, 2)/RN, rrN2004_N1(:, 3)/RN, 'm', 'LineWidth', 1);
 
 %Ларисса
 
-keplerN5 = [648.892682712     73545.700 0.00138600  47.269028 304.463616 214.121357  29.114807];%31.3.2050
-rrN5 = arrayfun(@(t)TritonR(t,keplerN5), linspace(0,2*24*3600,1000),'UniformOutput',false);
-rrN5 = cell2mat(rrN5)';
-plot3(rrN5(:, 1)/RN, rrN5(:, 2)/RN, rrN5(:, 3)/RN, 'm', 'LineWidth', 1);
+keplerN7 = [648.892682712     73545.700 0.00138600  47.269028 304.463616 214.121357  29.114807];%31.3.2050
+rrN7 = arrayfun(@(t)TritonR(t,keplerN7), linspace(0,2*24*3600,1000),'UniformOutput',false);
+rrN7 = cell2mat(rrN7)';
+plot3(rrN7(:, 1)/RN, rrN7(:, 2)/RN, rrN7(:, 3)/RN, 'm', 'LineWidth', 1);
 
 %Протей
 
-keplerN5 = [320.732634042    117646.000 0.00051000  47.626297 320.055732 124.639512  29.341616];%31.3.2050
-rrN5 = arrayfun(@(t)TritonR(t,keplerN5), linspace(0,2*24*3600,1000),'UniformOutput',false);
-rrN5 = cell2mat(rrN5)';
-plot3(rrN5(:, 1)/RN, rrN5(:, 2)/RN, rrN5(:, 3)/RN, 'm', 'LineWidth', 1);
+keplerN8 = [320.732634042    117646.000 0.00051000  47.626297 320.055732 124.639512  29.341616];%31.3.2050
+rrN8 = arrayfun(@(t)TritonR(t,keplerN8), linspace(0,2*24*3600,1000),'UniformOutput',false);
+rrN8 = cell2mat(rrN8)';
+plot3(rrN8(:, 1)/RN, rrN8(:, 2)/RN, rrN8(:, 3)/RN, 'm', 'LineWidth', 1);
 
 
 axis equal
@@ -306,65 +376,66 @@ hold off;
 
 
 %Проекция на Нептун
-figure(2);
-
-ind_pr_1=20200;%Второй виток
-ind_pr_2=22400;%Второй виток
-[rr_proj_az,rr_proj_el] = arrayfun(@(t,x,y,z)projectTrajectory(t,[x,y,z]),...
-    t(ind_pr_1:ind_pr_2),rr(ind_pr_1:ind_pr_2, 1),rr(ind_pr_1:ind_pr_2, 2),rr(ind_pr_1:ind_pr_2, 3),'UniformOutput',false);
-rr_proj_az = cell2mat(rr_proj_az)';
-rr_proj_el = cell2mat(rr_proj_el)';
-plot(rr_proj_az(:), rr_proj_el(:), 'k.', 'LineWidth', 0.2);
-
-xlim([-pi pi])
-ylim([-pi pi])
-
-%Вычисление в СО Нептуна
-rr_necc = rr(ind_pr_1:ind_pr_2, :);
-rr_N_SO = arrayfun(@(t,x,y,z)rotationNeptune(t,[x,y,z]),...
-    t(ind_pr_1:ind_pr_2),rr_necc(:,1),rr_necc(:,2),rr_necc(:,3),'UniformOutput',false);
-rr_N_SO = cell2mat(rr_N_SO')';
-t_N_SO = t(ind_pr_1:ind_pr_2)-t(ind_pr_1);
-t_N_SO(end)/24/3600
-dlmwrite('r-N-gelio.csv',rr_N_SO,'precision',10)
-dlmwrite('t-N-gelio.csv',t_N_SO,'precision',10)
-
-n = cross( VV(ind_pr_1,:), rr(ind_pr_1,:));
-n = n/norm(n);
-
-
-
-rr_necc_norm = vecnorm(rr_necc, 2, 2);
-tanalpha=1/65;
-
-n_plus=n-tanalpha*rr_necc(1,:)/rr_necc_norm(1);
-n_plus=n_plus/norm(n_plus);
-n_minus=-n-tanalpha*rr_necc(1,:)/rr_necc_norm(1);
-n_minus=n_minus/norm(n_minus);
-
-rr_necc_plus = rr_necc./rr_necc_norm;
-rr_necc_minus = rr_necc./rr_necc_norm;
-r_cos_plus=rr_necc_plus*n_plus';
-r_cos_minus=rr_necc_minus*n_minus';
-
-for i = 1:length(r_cos_plus)
-    rr_necc_plus(i,:)=rr_necc_plus(i,:)+n_plus*r_cos_plus(i);
-    rr_necc_minus(i,:)=rr_necc_minus(i,:)+n_minus*r_cos_minus(i);
-end
-
-rr_necc_plus_norm = vecnorm(rr_necc_plus, 2, 2);
-rr_necc_minus_norm = vecnorm(rr_necc_minus, 2, 2);
-
-rr_necc_plus = rr_necc_plus./rr_necc_plus_norm;
-rr_N_SO_plus = arrayfun(@(t,x,y,z)rotationNeptune(t,[x,y,z]),...
-    t(ind_pr_1:ind_pr_2),rr_necc_plus(:,1),rr_necc_plus(:,2),rr_necc_plus(:,3),'UniformOutput',false);
-rr_N_SO_plus = cell2mat(rr_N_SO_plus')';
-dlmwrite('dir-plus-N-gelio.csv',rr_N_SO_plus,'precision',10)
-
-rr_necc_minus = rr_necc_minus./rr_necc_plus_norm;
-rr_N_SO_minus = arrayfun(@(t,x,y,z)rotationNeptune(t,[x,y,z]),...
-    t(ind_pr_1:ind_pr_2),rr_necc_minus(:,1),rr_necc_minus(:,2),rr_necc_minus(:,3),'UniformOutput',false);
-rr_N_SO_minus = cell2mat(rr_N_SO_minus')';
-dlmwrite('dir-minus-N-gelio.csv',rr_N_SO_minus,'precision',10)
-
-angle2vectors(rr_N_SO(1,:),rr_N_SO_minus(1,:))
+% figure(2);
+% 
+% ind_pr_1=20200;%Второй виток
+% ind_pr_2=22400;%Второй виток
+% [rr_proj_az,rr_proj_el] = arrayfun(@(t,x,y,z)projectTrajectory(t,[x,y,z]),...
+%     t(ind_pr_1:ind_pr_2),rr(ind_pr_1:ind_pr_2, 1),rr(ind_pr_1:ind_pr_2, 2),rr(ind_pr_1:ind_pr_2, 3),'UniformOutput',false);
+% rr_proj_az = cell2mat(rr_proj_az)';
+% rr_proj_el = cell2mat(rr_proj_el)';
+% plot(rr_proj_az(:), rr_proj_el(:), 'k.', 'LineWidth', 0.2);
+% 
+% xlim([-pi pi])
+% ylim([-pi pi])
+% ind_pr_1=20000;
+% ind_pr_2=80000;
+% %Вычисление в СО Нептуна
+% rr_necc = rr(ind_pr_1:ind_pr_2, :);
+% rr_N_SO = arrayfun(@(t,x,y,z)rotationNeptune(t,[x,y,z]),...
+%     t(ind_pr_1:ind_pr_2),rr_necc(:,1),rr_necc(:,2),rr_necc(:,3),'UniformOutput',false);
+% rr_N_SO = cell2mat(rr_N_SO')';
+% t_N_SO = t(ind_pr_1:ind_pr_2)-t(ind_pr_1);
+% t_N_SO(end)/24/3600
+% %dlmwrite('r-N-gelio.csv',rr_N_SO,'precision',10)
+% %dlmwrite('t-N-gelio.csv',t_N_SO,'precision',10)
+% 
+% n = cross( VV(ind_pr_2,:), rr(ind_pr_2,:));
+% n = n/norm(n);
+% 
+% 
+% 
+% rr_necc_norm = vecnorm(rr_necc, 2, 2);
+% tanalpha=1/65.5;
+% 
+% n_plus=n-tanalpha*rr_necc(1,:)/rr_necc_norm(1);
+% n_plus=n_plus/norm(n_plus);
+% n_minus=-n-tanalpha*rr_necc(1,:)/rr_necc_norm(1);
+% n_minus=n_minus/norm(n_minus);
+% 
+% rr_necc_plus = rr_necc./rr_necc_norm;
+% rr_necc_minus = rr_necc./rr_necc_norm;
+% r_cos_plus=rr_necc_plus*n_plus';
+% r_cos_minus=rr_necc_minus*n_minus';
+% 
+% for i = 1:length(r_cos_plus)
+%     rr_necc_plus(i,:)=rr_necc_plus(i,:)+n_plus*r_cos_plus(i);
+%     rr_necc_minus(i,:)=rr_necc_minus(i,:)+n_minus*r_cos_minus(i);
+% end
+% 
+% rr_necc_plus_norm = vecnorm(rr_necc_plus, 2, 2);
+% rr_necc_minus_norm = vecnorm(rr_necc_minus, 2, 2);
+% 
+% rr_necc_plus = rr_necc_plus./rr_necc_plus_norm;
+% rr_N_SO_plus = arrayfun(@(t,x,y,z)rotationNeptune(t,[x,y,z]),...
+%     t(ind_pr_1:ind_pr_2),rr_necc_plus(:,1),rr_necc_plus(:,2),rr_necc_plus(:,3),'UniformOutput',false);
+% rr_N_SO_plus = cell2mat(rr_N_SO_plus')';
+% dlmwrite('dir-plus-second-part.csv',rr_N_SO_plus,'precision',10)
+% 
+% rr_necc_minus = rr_necc_minus./rr_necc_plus_norm;
+% rr_N_SO_minus = arrayfun(@(t,x,y,z)rotationNeptune(t,[x,y,z]),...
+%     t(ind_pr_1:ind_pr_2),rr_necc_minus(:,1),rr_necc_minus(:,2),rr_necc_minus(:,3),'UniformOutput',false);
+% rr_N_SO_minus = cell2mat(rr_N_SO_minus')';
+% dlmwrite('dir-minus-second-part.csv',rr_N_SO_minus,'precision',10)
+% 
+% angle2vectors(rr_N_SO(1,:),rr_N_SO_minus(1,:))

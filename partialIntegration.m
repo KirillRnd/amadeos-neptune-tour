@@ -14,7 +14,7 @@ t0_dist = 1.557156619267957e+07;
 %Влияние солнца
 mugSun=132712.43994*(10^6)*(10^(3*3));
 t_Neptune=juliandate(2050,3,31);
-rNS= planetEphemeris(t_Neptune+t-t0_dist/24/3600,'Neptune','Sun')';
+rNS= planetEphemeris(t_Neptune+(t-t0_dist)/24/3600,'Neptune','Sun')';
 rSun=rNS*1e3-r;
 gSun=-mugSun*rSun/norm(rSun)^3;
 
