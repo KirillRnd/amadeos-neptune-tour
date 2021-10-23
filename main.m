@@ -462,10 +462,13 @@ legend;
 % dlmwrite('dir-minus-second-part.csv',rr_N_SO_minus,'precision',10)
 % 
 % angle2vectors(rr_N_SO(1,:),rr_N_SO_minus(1,:))
-for t_c = tdV
+angles=zeros(1,length(tdV));
+for i = 1:length(tdV)
+    t_c=tdV(i);
     %t_connection = t_Neptune+(t(end)-t0_dist)/24/3600;
     t_connection = t_Neptune+(t_c-t0_dist)/24/3600;
     r_Earth_Neptune = planetEphemeris(t_connection,'Earth','Neptune','430');
     r_Earth_Sun = planetEphemeris(t_connection,'Earth','Sun','430');
-    angle_SEN = 180*angle2vectors(r_Earth_Neptune,r_Earth_Sun)/pi
+    angle_SEN = 180*angle2vectors(r_Earth_Neptune,r_Earth_Sun)/pi;
+    angles(i)=angle_SEN;
 end
