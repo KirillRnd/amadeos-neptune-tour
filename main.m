@@ -44,7 +44,7 @@ Rrel=[0; 0; 0;];
 options = odeset('Events',@(t, y)stopByDist(t,y,Rrel,dist));
 options = odeset(options,'RelTol',1e-13);
 Vrel=VN-VN_e;
-[t, y] = ode45(@(t,y) partialIntegrationSolar(t,y),tspan,[Rrel;-Vrel],options);
+[t, y] = ode45(@(t,y) partialIntegrationSolarNeptune(t,y),tspan,[Rrel;-Vrel],options);
 r_border=y(end,1:3)';
 V_border=-y(end,4:6)';
 r0=r_border;
@@ -106,6 +106,7 @@ dir_dV2=dir_dV2/norm(dir_dV2);
 tdV_2 = 1.539525149705983e+07;
 
 %Второй тормозной импульс
+%val_DV3 = -3.084123550418008e+02;
 val_DV3 = -3.084123550418008e+02;
 dir_dV3 = 1.0e+04 *[1.665011548038263  -1.141106172321206  -0.486895771533629];
 dir_dV3=dir_dV3/norm(dir_dV3);
@@ -116,7 +117,7 @@ tdV_3 = tdV_2+T0;
 val_DV4 = 1568;
 dir_dV4 = 1.0e+02 *[-8.213716499245859   5.963945086903120   2.730439197810426];
 dir_dV4=dir_dV4/norm(dir_dV4);
-
+t_10T = 2.132602916624223e+07;
 tdV_4 = t_10T+0.5*T;
 %Поднятие до хвоста магнитопаузы второй импульс
 val_DV5 = 1434;
@@ -149,20 +150,20 @@ T_enc=2.0590*T_corr;
 tdV_8 = tdV_7+T_corr;
 
 %Резонанс 4:1
-val_DV9 = -82;
+val_DV9 = -82.75;
 dir_dV9 =1.0e+03 *[-4.175713651185919   3.138992832089351   1.470355312252891];
 dir_dV9=dir_dV9/norm(dir_dV9);
 
 tdV_9 = tdV_8+T_enc;
 
 %Резонанс 4:1 второй
-val_DV10 = +74.5;
+val_DV10 = -234;
 dir_dV10 =1.0e+03 *[-4.220086735027001   3.263528068258492   1.550851347342127];
 dir_dV10=dir_dV10/norm(dir_dV10);
 
 tdV_10 = tdV_9+TTr4_1;
 
-%Резонанс 4:1
+%Тёмная зона
 val_DV11 = -4;
 dir_dV11 =1.0e+03 *[1.110697712707899  -0.744824370192724  -0.326725931032282];
 dir_dV11=dir_dV11/norm(dir_dV11);
@@ -174,31 +175,46 @@ tdV_11 = tdV_10+TTr2_1;
 % 
 % tdVres = tdV_5+0.833*TTr;
 % 
-val_DVend = -1200;
-dir_dVend =1.0e+03 *[1.269776126069155  -1.002252870251370  -0.398289212102105];
+val_DVend = -950;
+dir_dVend =1.0e+02 *[9.299300014176843  -4.824496278194602  -2.935576262556574];
 dir_dVend=dir_dVend/norm(dir_dVend);
 
-tdVend = tdV_11+3.372801612961292e+06;
+tdVend = tdV_11+2.386833104641877e+06;
 
 % dV=[dir_dV1*val_DV1;[0, 0, 0];dir_dV2*val_DV2;dir_dV3*val_DV3;dir_dV4*val_DV4;dir_dV5*val_DV5;dir_dVres*val_DVres;dir_dVend*val_DVend;];
 % tdV=[t0_dist*0.1,t0_dist*0.98,tdV_2,tdV_3,tdV_4,tdV_5,tdVres,tdVend];
 % lsp=[100;100;10000;10000;10000;10000;10000;10000;10000];
-
+% 
 % dV=[dir_dV1*val_DV1;[0, 0, 0];dir_dV2*val_DV2;dir_dV3*val_DV3;];
 % tdV=[t0_dist*0.1,t0_dist*0.98,tdV_2,tdV_3];
 % lsp=[100;100;10000;10000;10000;];
-dV=[dir_dV7*val_DV7;dir_dV8*val_DV8;dir_dV9*val_DV9;dir_dV10*val_DV10;dir_dV11*val_DV11;dir_dVend*val_DVend;];
-tdV=[tdV_7,tdV_8,tdV_9,tdV_10,tdV_11,tdVend];
-lsp=[10000;10000;10000;10000;10000;10000;10000;];%на один больше числа импульсов
+dV=[dir_dV1*val_DV1;[0, 0, 0];dir_dV2*val_DV2;dir_dV3*val_DV3;[0, 0, 0];...
+    dir_dV4*val_DV4;dir_dV5*val_DV5;dir_dV6*val_DV6;[0, 0, 0];...
+    dir_dV7*val_DV7;dir_dV8*val_DV8;dir_dV9*val_DV9;dir_dV10*val_DV10;dir_dV11*val_DV11;dir_dVend*val_DVend;];
+tdV=[t0_dist*0.1,t0_dist*0.98,tdV_2,tdV_3,t_10T,tdV_4,tdV_5,tdV_6,T_long10_ap,tdV_7,tdV_8,tdV_9,tdV_10,tdV_11,tdVend];
+lsp=[100;100;10000;10000;10000;10000;10000;10000;10000;10000;10000;10000;10000;10000;10000;10000;];%на один больше числа импульсов
 
-t_10T = 2.132602916624223e+07;
+
+% dV=[dir_dV1*val_DV1;[0, 0, 0];dir_dV2*val_DV2;dir_dV3*val_DV3;[0, 0, 0];...
+%     dir_dV4*val_DV4;dir_dV5*val_DV5;dir_dV6*val_DV6;[0, 0, 0];...
+%     dir_dV7*val_DV7;dir_dV8*val_DV8;dir_dV9*val_DV9;dir_dV10*val_DV10;dir_dV11*val_DV11;dir_dVend*val_DVend;];
+% tdV=[t0_dist*0.1,t0_dist*0.98,tdV_2,tdV_3,t_10T,tdV_4,tdV_5,tdV_6,T_long10_ap,tdV_7,tdV_8,tdV_9,tdV_10];
+% lsp=[100;100;10000;10000;10000;10000;10000;10000;10000;10000;10000;10000;10000;10000;10000;10000;];%на один больше числа импульсов
+
+
+% dV=[dir_dV7*val_DV7;dir_dV8*val_DV8;dir_dV9*val_DV9;dir_dV10*val_DV10;dir_dV11*val_DV11;dir_dVend*val_DVend;];
+% tdV=[tdV_7,tdV_8,tdV_9,tdV_10,tdV_11,tdVend];
+% lsp=[10000;10000;10000;10000;10000;10000;10000;];%на один больше числа импульсов
+
+
+
 rr_10T=1.0e+07 *[1.993305859334368;2.221608322826301;0.791584046491936];
 VV_10T=1.0e+04 *[1.588094205170606;-1.178573767259988;-0.536972261163208];
 
-rr_10longT=1.0e+09 *[1.175293640249717;1.045203062098898;0.389891144173080];
-VV_10longT=1.0e+03 *[1.031461046734626;-0.994856307009594;-0.443671059410833];
+rr_10longT=1.0e+09 *[1.175293787087023;1.045202900038859; 0.389891072126957];
+VV_10longT=1.0e+03 *[1.031460770410799;-0.994856568367942;-0.443671157865987];
 
-y0=[rr_10longT;VV_10longT];
+%y0=[rr_10longT;VV_10longT];
 
 % 
 % dV=[dir_dVres*val_DVres;dir_dVend*val_DVend;];
@@ -210,7 +226,7 @@ y0=[rr_10longT;VV_10longT];
 % y0=[r0,V0]';
 %tspan=[0,tdVend+TTr3_1];
 
-tspan=[T_long10_ap,tdVend+TTr2_1];
+tspan=[0,tdVend+TTr3_1];
 
 % dV=[];
 % tdV=[];
@@ -256,29 +272,36 @@ RN=24622000;
 R_Neptune = 1;
 [PoleNx,PoleNy,PoleNz]= sph2cart(RA_North,DE_Nort,R_Neptune*4);
 [x,y,z] = sphere(50);
-surf(R_Neptune*x, R_Neptune*y, R_Neptune*z);
+surf(R_Neptune*x, R_Neptune*y, R_Neptune*z,'HandleVisibility','off');
 set(gca,'FontSize',14)
 hold on;
 
 
 plot3([R_Neptune*20*SunLine(1) R_Neptune*25*SunLine(1)], ...
     [R_Neptune*20*SunLine(2) R_Neptune*25*SunLine(2)],...
-    [R_Neptune*20*SunLine(3) R_Neptune*25*SunLine(3)], 'y-x', 'LineWidth', 3);
+    [R_Neptune*20*SunLine(3) R_Neptune*25*SunLine(3)], 'y-x', 'LineWidth', 3,'DisplayName','Магнитопауза');
 
 plot3([-R_Neptune*50*SunLine(1) -R_Neptune*80*SunLine(1)], ...
     [-R_Neptune*50*SunLine(2) -R_Neptune*80*SunLine(2)],...
-    [-R_Neptune*50*SunLine(3) -R_Neptune*80*SunLine(3)], 'y-x', 'LineWidth', 3);
+    [-R_Neptune*50*SunLine(3) -R_Neptune*80*SunLine(3)], 'y-x', 'LineWidth', 3,'DisplayName','Хвост магнитосферы');
 
+ind_phase_2=40200;
+ind_phase_3=80200;
+%Первая фаза
+plot3(rr(1:ind_phase_2, 1)/RN, rr(1:ind_phase_2, 2)/RN, rr(1:ind_phase_2, 3)/RN, 'g', 'LineWidth', 1,'DisplayName','Первый этап');
+%Вторая фаза
+plot3(rr(ind_phase_2:ind_phase_3, 1)/RN, rr(ind_phase_2:ind_phase_3, 2)/RN, rr(ind_phase_2:ind_phase_3, 3)/RN, 'r', 'LineWidth', 1,'DisplayName','Второй этап');
+%Третья фаза
+plot3(rr(ind_phase_3:end, 1)/RN, rr(ind_phase_3:end, 2)/RN, rr(ind_phase_3:end, 3)/RN, 'b', 'LineWidth', 1,'DisplayName','Третий этап');
+plot3([PoleNx; -PoleNx], [PoleNy; -PoleNy], [PoleNz; -PoleNz], 'k', 'LineWidth', 1,'DisplayName','Ось вращения Нептуна');
 
-plot3(rr(:, 1)/RN, rr(:, 2)/RN, rr(:, 3)/RN, 'g', 'LineWidth', 1);
-plot3([PoleNx; -PoleNx], [PoleNy; -PoleNy], [PoleNz; -PoleNz], 'k', 'LineWidth', 1);
 
 %plot3(rr(100, 1)/ae, rr(100, 2)/ae, rr(100, 3)/ae, 'rO', 'LineWidth', 1.5);
-% ind1=lsp(1)+lsp(2)+1;
-% ind2=lsp(1)+lsp(2)+lsp(3);
-% minimum = min(vecnorm(rr(ind1:ind2,:),2,2));
-% ind_per = find(minimum == vecnorm(rr(ind1:ind2,:),2,2))+lsp(1)+lsp(2);
-% plot3(rr(ind_per, 1)/RN, rr(ind_per, 2)/RN, rr(ind_per, 3)/RN, 'rO', 'LineWidth', 1.5);
+ind1=lsp(1)+lsp(2)+1;
+ind2=lsp(1)+lsp(2)+lsp(3);
+minimum = min(vecnorm(rr(ind1:ind2,:),2,2));
+ind_per = find(minimum == vecnorm(rr(ind1:ind2,:),2,2))+lsp(1)+lsp(2);
+%plot3(rr(ind_per, 1)/RN, rr(ind_per, 2)/RN, rr(ind_per, 3)/RN, 'rO', 'LineWidth', 1.5);
 % ind_3_man=lsp(1)+lsp(2)+lsp(3)+lsp(4);
 % plot3(rr(ind_3_man, 1)/RN, rr(ind_3_man, 2)/RN, rr(ind_3_man, 3)/RN, 'rO', 'LineWidth', 1.5);
 % ind_4_man=lsp(1)+lsp(2)+lsp(3)+lsp(4)+lsp(5);
@@ -288,26 +311,26 @@ plot3([PoleNx; -PoleNx], [PoleNy; -PoleNy], [PoleNz; -PoleNz], 'k', 'LineWidth',
 % ind_6_man=lsp(1)+lsp(2)+lsp(3)+lsp(4)+lsp(5)+lsp(6)+lsp(7);
 % plot3(rr(ind_6_man, 1)/RN, rr(ind_6_man, 2)/RN, rr(ind_6_man, 3)/RN, 'rO', 'LineWidth', 1.5);
 %ind_7_man=lsp(1)+lsp(2)+lsp(3)+lsp(4)+lsp(5)+lsp(6)+lsp(7)+lsp(8);
-ind_7_man=40000;
-plot3(rr(ind_7_man, 1)/RN, rr(ind_7_man, 2)/RN, rr(ind_7_man, 3)/RN, 'rO', 'LineWidth', 1.5);
+%ind_7_man=40000;
+%plot3(rr(ind_7_man, 1)/RN, rr(ind_7_man, 2)/RN, rr(ind_7_man, 3)/RN, 'rO', 'LineWidth', 1.5);
 
 %plot3([rr(1, 1)/ae;rr(1, 1)/ae+V0(1)*1e-7], [rr(1, 2)/ae;rr(1, 2)/ae+V0(2)*1e-7], [rr(1, 3)/ae;rr(1, 3)/ae+V0(3)*1e-7], 'r', 'LineWidth', 1);
 
 %plot3([rr(1, 1)/ae;rr(1, 1)/ae+dV(1)*1e-7], [rr(1, 2)/ae;rr(1, 2)/ae+dV(2)*1e-7], [rr(1, 3)/ae;rr(1, 3)/ae+dV(3)*1e-7], 'r', 'LineWidth', 1);
 
-plot3(rr(end, 1)/RN, rr(end, 2)/RN, rr(end, 3)/RN, 'kO', 'LineWidth', 1.5);
+%plot3(rr(end, 1)/RN, rr(end, 2)/RN, rr(end, 3)/RN, 'kO', 'LineWidth', 1.5);
 
 %Тритон
 keplerT = [61.315381532    354532.843 0.00000000 111.935349 308.921483   0.000000 219.270622];%31.3.2050
 rrT = arrayfun(@(t)TritonR(t,keplerT), linspace(0,5.90*24*3600,500),'UniformOutput',false);
 rrT = cell2mat(rrT)';
-plot3(rrT(:, 1)/RN, rrT(:, 2)/RN, rrT(:, 3)/RN, 'b', 'LineWidth', 2.5);
+plot3(rrT(:, 1)/RN, rrT(:, 2)/RN, rrT(:, 3)/RN, 'b', 'LineWidth', 2.5,'DisplayName','Орбита Тритона');
 
 rrT_real = arrayfun(@(t)TritonR(t,keplerT), t'-t0_dist,'UniformOutput',false);
 rrT_real = cell2mat(rrT_real)';
 min(vecnorm(rrT_real-rr,2,2))-RT
 rT_1 = TritonR(tspan(2),keplerT);
-plot3(rrT_real(end,1)/RN, rrT_real(end,2)/RN, rrT_real(end,3)/RN, 'bO', 'LineWidth', 2.5);
+%plot3(rrT_real(end,1)/RN, rrT_real(end,2)/RN, rrT_real(end,3)/RN, 'bO', 'LineWidth', 2.5);
 
 %Нереида - нет эфемерид на дату
 
@@ -315,47 +338,47 @@ plot3(rrT_real(end,1)/RN, rrT_real(end,2)/RN, rrT_real(end,3)/RN, 'bO', 'LineWid
 keplerN3 = [1221.774432464     48233.100 0.00032800  46.434045 236.010000 266.936289  22.820489];%31.3.2050
 rrN3 = arrayfun(@(t)TritonR(t,keplerN3), linspace(0,2*24*3600,1000),'UniformOutput',false);
 rrN3 = cell2mat(rrN3)';
-plot3(rrN3(:, 1)/RN, rrN3(:, 2)/RN, rrN3(:, 3)/RN, 'm', 'LineWidth', 1);
+plot3(rrN3(:, 1)/RN, rrN3(:, 2)/RN, rrN3(:, 3)/RN, 'm', 'LineWidth', 1,'HandleVisibility','off');
 
 %Таласса
 keplerN4 = [1155.188396002     50069.200 0.00015600  46.859520  18.089245 354.055519  29.206508];%31.3.2050
 rrN4 = arrayfun(@(t)TritonR(t,keplerN4), linspace(0,2*24*3600,1000),'UniformOutput',false);
 rrN4 = cell2mat(rrN4)';
-plot3(rrN4(:, 1)/RN, rrN4(:, 2)/RN, rrN4(:, 3)/RN, 'm', 'LineWidth', 1);
+plot3(rrN4(:, 1)/RN, rrN4(:, 2)/RN, rrN4(:, 3)/RN, 'm', 'LineWidth', 1,'HandleVisibility','off');
 
 %Деспина
 keplerN5 = [1074.933449933     52531.300 0.00013900  47.125758 168.020812 313.172633  29.286075];%31.3.2050
 rrN5 = arrayfun(@(t)TritonR(t,keplerN5), linspace(0,2*24*3600,1000),'UniformOutput',false);
 rrN5 = cell2mat(rrN5)';
-plot3(rrN5(:, 1)/RN, rrN5(:, 2)/RN, rrN5(:, 3)/RN, 'm', 'LineWidth', 1);
+plot3(rrN5(:, 1)/RN, rrN5(:, 2)/RN, rrN5(:, 3)/RN, 'm', 'LineWidth', 1,'HandleVisibility','off');
 
 %Галатея
 
 keplerN6 = [839.456823581     61945.100 0.00012000  47.040284 179.420028 231.310371  29.328417];%31.3.2050
 rrN6 = arrayfun(@(t)TritonR(t,keplerN6), linspace(0,2*24*3600,1000),'UniformOutput',false);
 rrN6 = cell2mat(rrN6)';
-plot3(rrN6(:, 1)/RN, rrN6(:, 2)/RN, rrN6(:, 3)/RN, 'm', 'LineWidth', 1);
+plot3(rrN6(:, 1)/RN, rrN6(:, 2)/RN, rrN6(:, 3)/RN, 'm', 'LineWidth', 1,'HandleVisibility','off');
 
 %2004_N1
 
 kepler2004_N1 = [378.887763843    105284.000 0.00000000  47.056000   7.635286   0.000000  29.373000];%31.3.2050
 rrN2004_N1 = arrayfun(@(t)TritonR(t,kepler2004_N1), linspace(0,2*24*3600,1000),'UniformOutput',false);
 rrN2004_N1 = cell2mat(rrN2004_N1)';
-plot3(rrN2004_N1(:, 1)/RN, rrN2004_N1(:, 2)/RN, rrN2004_N1(:, 3)/RN, 'm', 'LineWidth', 1);
+plot3(rrN2004_N1(:, 1)/RN, rrN2004_N1(:, 2)/RN, rrN2004_N1(:, 3)/RN, 'm', 'LineWidth', 1,'HandleVisibility','off');
 
 %Ларисса
 
 keplerN7 = [648.892682712     73545.700 0.00138600  47.269028 304.463616 214.121357  29.114807];%31.3.2050
 rrN7 = arrayfun(@(t)TritonR(t,keplerN7), linspace(0,2*24*3600,1000),'UniformOutput',false);
 rrN7 = cell2mat(rrN7)';
-plot3(rrN7(:, 1)/RN, rrN7(:, 2)/RN, rrN7(:, 3)/RN, 'm', 'LineWidth', 1);
+plot3(rrN7(:, 1)/RN, rrN7(:, 2)/RN, rrN7(:, 3)/RN, 'm', 'LineWidth', 1,'HandleVisibility','off');
 
 %Протей
 
 keplerN8 = [320.732634042    117646.000 0.00051000  47.626297 320.055732 124.639512  29.341616];%31.3.2050
 rrN8 = arrayfun(@(t)TritonR(t,keplerN8), linspace(0,2*24*3600,1000),'UniformOutput',false);
 rrN8 = cell2mat(rrN8)';
-plot3(rrN8(:, 1)/RN, rrN8(:, 2)/RN, rrN8(:, 3)/RN, 'm', 'LineWidth', 1);
+plot3(rrN8(:, 1)/RN, rrN8(:, 2)/RN, rrN8(:, 3)/RN, 'm', 'LineWidth', 1,'DisplayName','Орбиты спутников');
 
 
 axis equal
@@ -373,7 +396,7 @@ ylim([-50 65])
 zlim([-40 40])
 box off;
 hold off;
-
+legend;
 
 %Проекция на Нептун
 % figure(2);
@@ -439,3 +462,10 @@ hold off;
 % dlmwrite('dir-minus-second-part.csv',rr_N_SO_minus,'precision',10)
 % 
 % angle2vectors(rr_N_SO(1,:),rr_N_SO_minus(1,:))
+for t_c = tdV
+    %t_connection = t_Neptune+(t(end)-t0_dist)/24/3600;
+    t_connection = t_Neptune+(t_c-t0_dist)/24/3600;
+    r_Earth_Neptune = planetEphemeris(t_connection,'Earth','Neptune','430');
+    r_Earth_Sun = planetEphemeris(t_connection,'Earth','Sun','430');
+    angle_SEN = 180*angle2vectors(r_Earth_Neptune,r_Earth_Sun)/pi
+end

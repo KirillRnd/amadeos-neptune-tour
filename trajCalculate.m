@@ -40,23 +40,59 @@ t_Neptune=juliandate(year,month,day);
 r_e=r_e'*1e3;
 V_e=V_e'*1e3;
 v1 = (norm(V_e)+vinf1)*V_e/norm(V_e);
-tspan12 = linspace(t_Earth,t_Jupiter,10000)*24*3600;
+tspan12 = linspace(t_Earth,t_Jupiter,100)*24*3600;
 %tspan12 = linspace(0,T12*365*24*3600,10000);
 [t12, y12] = ode45(@(t,y) partialIntegrationSolar(t,y),tspan12,[r2;-vInGel2]);
-rr12=y12(:,1:3);
+rr12=y12(end:-1:1,1:3);
+VV12=y12(end:-1:1,4:6);
 
-
-tspan23 = linspace(t_Jupiter,t_Neptune,10000)*24*3600;
+tspan23 = linspace(t_Jupiter,t_Neptune,100)*24*3600;
 [t23, y23] = ode45(@(t,y) partialIntegrationSolar(t,y),tspan23,[r2;vOutGel2]);
-rr23=y23(end:-1:1,1:3);
-
+rr23=y23(:,1:3);
+VV23=y23(:,4:6);
 ae = 149597870700;
 figure(3)
 
-plot3(rr12(:,1)/ae,rr12(:,2)/ae,rr12(:,3)/ae);
-hold on;
-plot3(rr23(:,1)/ae,rr23(:,2)/ae,rr23(:,3)/ae);
-hold off;
+rr=[rr12;rr23];
+VV=[VV12;VV23];
+t=[t12;t23];
 
-dlmwrite('r-gelio.csv',[rr12;rr23],'precision',10)
-dlmwrite('t-gelio.csv',[t12;t23],'precision',10)
+plot3(rr(:,1)/ae,rr(:,2)/ae,rr(:,3)/ae,'k');
+% plot3(rr12(:,1)/ae,rr12(:,2)/ae,rr12(:,3)/ae);
+hold on;
+plot3(rr12(end,1)/ae,rr12(end,2)/ae,rr12(end,3)/ae,'+k');
+rrE = arrayfun(@(t)planetEphemeris(t,'Sun','Earth','430'), t/24/3600,'UniformOutput',false);
+rrE = 1e3*cell2mat(rrE);
+plot3(rrE(:,1)/ae,rrE(:,2)/ae,rrE(:,3)/ae,'--b');
+
+rrP = arrayfun(@(t)planetEphemeris(t,'Sun','Mars','430'), t/24/3600,'UniformOutput',false);
+rrP = 1e3*cell2mat(rrP);
+plot3(rrP(:,1)/ae,rrP(:,2)/ae,rrP(:,3)/ae,'--b');
+
+rrJ = arrayfun(@(t)planetEphemeris(t,'Sun','Jupiter','430'), t/24/3600,'UniformOutput',false);
+rrJ = 1e3*cell2mat(rrJ);
+plot3(rrJ(:,1)/ae,rrJ(:,2)/ae,rrJ(:,3)/ae,'--b');
+
+rrP = arrayfun(@(t)planetEphemeris(t,'Sun','Saturn','430'), t/24/3600,'UniformOutput',false);
+rrP = 1e3*cell2mat(rrP);
+plot3(rrP(:,1)/ae,rrP(:,2)/ae,rrP(:,3)/ae,'--b');
+
+rrP = arrayfun(@(t)planetEphemeris(t,'Sun','Uranus','430'), t/24/3600,'UniformOutput',false);
+rrP = 1e3*cell2mat(rrP);
+plot3(rrP(:,1)/ae,rrP(:,2)/ae,rrP(:,3)/ae,'--b');
+
+rrP = arrayfun(@(t)planetEphemeris(t,'Sun','Neptune','430'), t/24/3600,'UniformOutput',false);
+rrP = 1e3*cell2mat(rrP);
+plot3(rrP(:,1)/ae,rrP(:,2)/ae,rrP(:,3)/ae,'--b');
+
+axis equal;
+hold off;
+box off;
+xlabel('x, a.e.')
+ylabel('y, a.e.')
+% plot3(rr23(:,1)/ae,rr23(:,2)/ae,rr23(:,3)/ae);
+% hold off;
+
+dlmwrite('r-gelio.csv',rr,'precision',10)
+dlmwrite('V-gelio.csv',VV,'precision',10)
+dlmwrite('t-gelio.csv',t,'precision',10)

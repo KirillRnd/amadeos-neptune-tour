@@ -1,4 +1,4 @@
-load('D:\Копия с Pavillon\MATLAB\MVT_1\EJN\БУТ\gelio23.1.mat')
+load('MVT/gelio23.1.mat')
 res = TEMP(:,20);
 
 rN=mvt2icrf(res(17:19))*1e3;
@@ -79,37 +79,47 @@ DE_North=2*pi*64.50/360;
 
 [PoleNx,PoleNy,PoleNz]= sph2cart(RA_North,DE_North,4);
 [x,y,z] = sphere(50);
-surf(x, y, z);
+surf(x, y, z,'HandleVisibility','off');
 set(gca,'FontSize',14)
 hold on;
 
-plot3(rr(:, 1)/RJ, rr(:, 2)/RJ, rr(:, 3)/RJ, 'g', 'LineWidth', 1);
-plot3([PoleNx; -PoleNx], [PoleNy; -PoleNy], [PoleNz; -PoleNz], 'k', 'LineWidth', 1);
+plot3(rr(:, 1)/RJ, rr(:, 2)/RJ, rr(:, 3)/RJ, 'g', 'LineWidth', 1,'DisplayName','Траектория КА');
+plot3([PoleNx; -PoleNx], [PoleNy; -PoleNy], [PoleNz; -PoleNz], 'k', 'LineWidth', 1,'DisplayName','Ось вращения Юпитера');
 %Время пролёта в центре массива совпадает с датой 22.1.2033
 tMoons = t-t1(end);
 %Ио
 keplerT = [203.319432880    421941.192 0.00425971  25.488489 293.700025 113.745069 358.148522];%22.1.2033
 rrT = arrayfun(@(t)jupiterMoon(t,keplerT), tMoons','UniformOutput',false);
 rrT = cell2mat(rrT)';
-plot3(rrT(:, 1)/RJ, rrT(:, 2)/RJ, rrT(:, 3)/RJ, 'm', 'LineWidth', 2.5);
+plot3(rrT(:, 1)/RJ, rrT(:, 2)/RJ, rrT(:, 3)/RJ, 'm', 'LineWidth', 2.5,'HandleVisibility','off');
 %Европа
 keplerT = [101.373921510    671043.288 0.00965902  25.110625 323.144797 300.031607 358.573774];%22.1.2033
 rrT = arrayfun(@(t)jupiterMoon(t,keplerT), tMoons','UniformOutput',false);
 rrT = cell2mat(rrT)';
-plot3(rrT(:, 1)/RJ, rrT(:, 2)/RJ, rrT(:, 3)/RJ, 'm', 'LineWidth', 2.5);
+plot3(rrT(:, 1)/RJ, rrT(:, 2)/RJ, rrT(:, 3)/RJ, 'm', 'LineWidth', 2.5,'HandleVisibility','off');
+ind_min=1073;
+plot3(rrT(ind_min, 1)/RJ, rrT(ind_min, 2)/RJ, rrT(ind_min, 3)/RJ, 'bO', 'LineWidth', 2.5,'DisplayName','Европа')
 %Ганимед
-keplerT = [50.318631422   1070425.532 0.00200786  25.625514  86.907240  15.029019 357.904160];%22.1.2033
-rrT = arrayfun(@(t)jupiterMoon(t,keplerT), tMoons','UniformOutput',false);
+keplerG = [50.318631422   1070425.532 0.00200786  25.625514  86.907240  15.029019 357.904160];%22.1.2033
+rrT = arrayfun(@(t)jupiterMoon(t,keplerG), tMoons','UniformOutput',false);
 rrT = cell2mat(rrT)';
-plot3(rrT(:, 1)/RJ, rrT(:, 2)/RJ, rrT(:, 3)/RJ, 'm', 'LineWidth', 2.5);
+plot3(rrT(:, 1)/RJ, rrT(:, 2)/RJ, rrT(:, 3)/RJ, 'm', 'LineWidth', 2.5,'HandleVisibility','off');
 %Каллисто
 keplerT = [21.583172346   1882040.909 0.00739007  25.232828 243.194338  17.617524 358.198304];%22.1.2033
 rrT = arrayfun(@(t)jupiterMoon(t,keplerT), tMoons','UniformOutput',false);
 rrT = cell2mat(rrT)';
-plot3(rrT(:, 1)/RJ, rrT(:, 2)/RJ, rrT(:, 3)/RJ, 'm', 'LineWidth', 2.5);
+plot3(rrT(:, 1)/RJ, rrT(:, 2)/RJ, rrT(:, 3)/RJ, 'm', 'LineWidth', 2.5,'DisplayName','Орбиты спутников');
 
+
+plot3(rr(ind_min, 1)/RJ, rr(ind_min, 2)/RJ, rr(ind_min, 3)/RJ, 'kO', 'LineWidth', 2.5,'DisplayName','Сближение КА с Европой')
+
+ind_min=1558;
+plot3(rrT(ind_min, 1)/RJ, rrT(ind_min, 2)/RJ, rrT(ind_min, 3)/RJ, 'bO', 'LineWidth', 2.5,'DisplayName','Каллисто')
+plot3(rr(ind_min, 1)/RJ, rr(ind_min, 2)/RJ, rr(ind_min, 3)/RJ, 'kO', 'LineWidth', 2.5,'DisplayName','Сближение КА с Каллисто')
 axis equal;
 hold off;
+legend
+
 
 rr_J_SO = arrayfun(@(t,x,y,z)rotationJupiter(t,[x,y,z]),...
     t(:),rr(:, 1),rr(:, 2),rr(:, 3),'UniformOutput',false);
