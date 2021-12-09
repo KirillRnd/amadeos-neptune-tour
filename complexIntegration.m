@@ -20,7 +20,12 @@ for i = 1:length(tspan_new)-1
         options = odeset(options,'AbsTol',1e-10);
         options = odeset(options,'RelTol',1e-6);
     end
-    [t, y] = ode45(@(t,y) partialIntegration(t,y,'Neptune'),tspan,y0_new,options);
+    if i == length(tspan_new)-1
+        [t, y] = ode45(@(t,y) partialIntegration(t,y,'Neptune'),tspan,y0_new,options);
+    else
+        [t, y] = hashedIntegration(@(t,y) partialIntegration(t,y,'Neptune'),tspan,y0_new,options);
+    end
+    
     T = cat(1,T,t);
     Y = cat(1,Y,y);
     y0_new=y(end,:);
